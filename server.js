@@ -98,6 +98,51 @@ app.get('/tasks', requireAuth, async (req, res) => {
   res.json(tasks);
 });
 
+// ── CLASSES (timetable) ──
+app.get('/classes', requireAuth, async (req, res) => {
+  const result = await sql`SELECT data FROM user_classes WHERE user_id = ${req.userId}`;
+  res.json(result.length ? result[0].data : []);
+});
+
+app.put('/classes', requireAuth, async (req, res) => {
+  await sql`
+    INSERT INTO user_classes (user_id, data)
+    VALUES (${req.userId}, ${JSON.stringify(req.body)})
+    ON CONFLICT (user_id) DO UPDATE SET data = ${JSON.stringify(req.body)}
+  `;
+  res.json({ success: true });
+});
+
+// ── SLIDES ──
+app.get('/slides', requireAuth, async (req, res) => {
+  const result = await sql`SELECT data FROM user_slides WHERE user_id = ${req.userId}`;
+  res.json(result.length ? result[0].data : []);
+});
+
+app.put('/slides', requireAuth, async (req, res) => {
+  await sql`
+    INSERT INTO user_slides (user_id, data)
+    VALUES (${req.userId}, ${JSON.stringify(req.body)})
+    ON CONFLICT (user_id) DO UPDATE SET data = ${JSON.stringify(req.body)}
+  `;
+  res.json({ success: true });
+});
+
+// ── SETTINGS ──
+app.get('/settings', requireAuth, async (req, res) => {
+  const result = await sql`SELECT data FROM user_settings WHERE user_id = ${req.userId}`;
+  res.json(result.length ? result[0].data : {});
+});
+
+app.put('/settings', requireAuth, async (req, res) => {
+  await sql`
+    INSERT INTO user_settings (user_id, data)
+    VALUES (${req.userId}, ${JSON.stringify(req.body)})
+    ON CONFLICT (user_id) DO UPDATE SET data = ${JSON.stringify(req.body)}
+  `;
+  res.json({ success: true });
+});
+
 app.post('/tasks', requireAuth, async (req, res) => {
   const { name, date, priority } = req.body;
   if (!name) return res.status(400).json({ error: 'Missing name' });
